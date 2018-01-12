@@ -32,38 +32,34 @@ data WalletStorage = WalletStorage
     }
 -}
 
+-- type Utxo = Map TxIn TxOutAux
+
+
+showStats :: HasConfigurations => WalletStorage -> IO ()
+showStats WalletStorage{..} = do
+    let wallets  = HM.elems _wsWalletInfos
+    let accounts = HM.toList _wsAccountInfos
+    -- let txsIn    = elems _wsUtxo
+    say $ bold "Wallets:" <> printf " %d"  (length wallets)
+    listOf (map renderWallet wallets)
+    blankLine
+    say $ bold "Accounts:" <> printf " %d" (length accounts)
+    listOf (map renderAccount accounts)
+    blankLine
+    say $ printf "Number of used addresses: %d" (length _wsUsedAddresses)
+    say $ printf "Number of change addresses: %d" (length _wsChangeAddresses)
+
 showStatsAndExit :: HasConfigurations => FilePath -> IO ()
 showStatsAndExit walletPath = do
-    let db = walletPath
-    bracket (openState False db) (\x -> closeState x >> exitSuccess) $ \db' -> do
-        WalletStorage{..} <- getStorage db'
-        let wallets  = HM.elems _wsWalletInfos
-        let accounts = HM.toList _wsAccountInfos
-        say $ bold "Wallets:" <> printf " %d"  (length wallets)
-        listOf (map renderWallet wallets)
-        blankLine
-        say $ bold "Accounts:" <> printf " %d" (length accounts)
-        listOf (map renderAccount accounts)
-        say "\n"
-        say $ printf "Number of used addresses: %d" (length _wsUsedAddresses)
-        say $ printf "Number of change addresses: %d" (length _wsChangeAddresses)
+    bracket (openState False walletPath) (\x -> closeState x >> exitSuccess) $ \db -> do
+        walletStorage <- getStorage db
+        showStats walletStorage
 
--- TODO(ks): Yes, remove duplication...
 showStatsNoExit :: HasConfigurations => FilePath -> IO ()
 showStatsNoExit walletPath = do
-    let db = walletPath
-    bracket (openState False db) (\x -> closeState x) $ \db' -> do
-        WalletStorage{..} <- getStorage db'
-        let wallets  = HM.elems _wsWalletInfos
-        let accounts = HM.toList _wsAccountInfos
-        say $ bold "Wallets:" <> printf " %d"  (length wallets)
-        listOf (map renderWallet wallets)
-        blankLine
-        say $ bold "Accounts:" <> printf " %d" (length accounts)
-        listOf (map renderAccount accounts)
-        say "\n"
-        say $ printf "Number of used addresses: %d" (length _wsUsedAddresses)
-        say $ printf "Number of change addresses: %d" (length _wsChangeAddresses)
+  bracket (openState False walletPath) (\x -> closeState x) $ \db -> do
+        walletStorage <- getStorage db
+        showStats walletStorage
 
 showStatsData :: HasConfigurations => String -> FilePath -> IO ()
 showStatsData mark walletPath = do

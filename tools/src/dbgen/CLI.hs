@@ -34,6 +34,7 @@ data CLI = CLI
     -- ^ If true, print the stats for the `wallet-db`
     , queryMethod       :: Maybe Method
     -- ^ If true, generate a DB targeting mainnet.
+    , genFakeUtxo       :: Bool
     }
 
 
@@ -65,6 +66,7 @@ instance ParseRecord CLI where
                              <> help "A valid node system start to use."))
               <*> switch (long "stats" <> help "Show stats for this wallet.")
               <*> ((readMaybe =<<) <$> (optional (strOption (long "query" <> help "Query a predefined endpoint."))))
+              <*> switch (long "genFakeUtxo" <> help "Generate fake UTXO for the wallet. Fake as-in doesn't exist in node DB.")
 
 
 readAccountId :: String -> Either String AccountId
