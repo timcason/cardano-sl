@@ -42,11 +42,11 @@ deriveAesKeyBS :: ByteString -> AesKey
 deriveAesKeyBS = AesKey . blake2b
 
 aesEncrypt :: ByteString -> AesKey -> Either CryptoError ByteString
-aesEncrypt input (fromAESKey -> sk) = ctrCombine <$> init <*> pure nullIV <*> pure input
+aesEncrypt input (fromAESKey -> sk) = ctrCombine <$> cInit <*> pure nullIV <*> pure input
   where
     -- FIXME: return either here
-    init :: Either CryptoError AES256
-    init = eitherCryptoError $ cipherInit sk
+    cInit :: Either CryptoError AES256
+    cInit = eitherCryptoError $ cipherInit sk
 
 aesDecrypt :: ByteString -> AesKey -> Either CryptoError ByteString
 aesDecrypt = aesEncrypt -- encryption/decryption is symmetric
