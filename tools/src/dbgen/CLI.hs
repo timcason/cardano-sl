@@ -2,7 +2,6 @@
 module CLI where
 
 import           Prelude
-import           Data.Maybe
 import           Data.Monoid
 import           Data.String.Conv
 import           Options.Applicative
@@ -39,10 +38,10 @@ data CLI = CLI
 
 
 instance ParseRecord CLI where
-  parseRecord = CLI <$> fmap (fromMaybe "./config.dhall") (optional (
-    strOption (long "config" <> metavar "CONFIG.DHALL"
-                             <> help "A path to a Dhall file. (Default: ./config.dhall)"
-              )))
+  parseRecord = CLI
+              <$> (strOption (long "config" <> metavar "CONFIG.DHALL"
+                             <> help "A path to a Dhall file."
+                                      ))
               <*> (strOption (long "nodeDB" <> metavar "rocksdb-path"
                              <> help "A path to a valid rocksdb database."
                                       ))

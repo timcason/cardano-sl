@@ -135,7 +135,7 @@ newConfig CLI{..} = defaultConfigurationOptions {
     , cfoKey          = pack configurationProf
     }
 
--- stack exec dbgen -- --nodeDB db-mainnet --walletDB wdb-mainnet --configPath node/configuration.yaml --secretKey secret-mainnet.key --configProf mainnet_full
+-- stack exec dbgen -- --config ./tools/src/dbgen/config.dhall --nodeDB db-mainnet --walletDB wdb-mainnet --configPath node/configuration.yaml --secretKey secret-mainnet.key --configProf mainnet_full
 main :: IO ()
 main = do
 
