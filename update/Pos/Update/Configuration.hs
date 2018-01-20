@@ -1,4 +1,5 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE Rank2Types      #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 -- | Propagation of runtime configuration.
 
@@ -9,6 +10,7 @@ module Pos.Update.Configuration
        , withUpdateConfiguration
 
        , ourAppName
+       , currentSystemTag
        , ourSystemTag
        , lastKnownBlockVersion
        , curSoftwareVersion
@@ -19,13 +21,20 @@ import           Universum
 import           Data.Aeson (FromJSON (..), withObject, (.:), (.:?))
 import           Data.Maybe (fromMaybe)
 import           Data.Reflection (Given (..), give)
+import qualified Data.Text as T
+import           Distribution.System (buildArch, buildOS)
+import           Language.Haskell.TH (runIO)
+import qualified Language.Haskell.TH.Syntax as TH (lift)
+import           System.Console.ANSI (Color (Blue, Red), ColorIntensity (Vivid),
+                                      ConsoleLayer (Foreground), SGR (Reset, SetColor),
+                                      setSGRCode)
+
 
 -- For FromJSON instances.
 import           Pos.Aeson.Core ()
 import           Pos.Aeson.Update ()
-import           Pos.Core (ApplicationName, BlockVersion (..), SoftwareVersion (..),
-                           currentSystemTag)
-import           Pos.Core.Update (SystemTag)
+import           Pos.Core (ApplicationName, BlockVersion (..), SoftwareVersion (..))
+import           Pos.Core.Update (SystemTag, archHelper, mkSystemTag, osHelper)
 
 ----------------------------------------------------------------------------
 -- Config itself
@@ -75,6 +84,25 @@ lastKnownBlockVersion = ccLastKnownBlockVersion updateConfiguration
 -- | Version of application (code running)
 curSoftwareVersion :: HasUpdateConfiguration => SoftwareVersion
 curSoftwareVersion = SoftwareVersion ourAppName (ccApplicationVersion updateConfiguration)
+
+-- | @SystemTag@ corresponding to the operating system/architecture pair the program was
+-- compiled in.
+-- The @Distribution.System@ module from @Cabal@ was used
+-- (https://hackage.haskell.org/package/Cabal-2.0.1.1/docs/Distribution-System.html)
+currentSystemTag :: SystemTag
+currentSystemTag =
+    $(do let s :: Either String SystemTag
+             s = mkSystemTag (toText (osHelper buildOS ++ archHelper buildArch))
+             color col t =
+                 "\n" <> toText (setSGRCode [SetColor Foreground Vivid col]) <> t <>
+                     toText (setSGRCode [Reset]) <> "\n"
+         case s of Left e -> error . color Red . T.concat $
+                                 ["Current system tag could not be calculated: ",
+                                  toText e]
+                   Right tag -> do runIO . putStrLn . color Blue . T.concat $
+                                       ["Current system tag is: ", show tag]
+                                   TH.lift tag
+     )
 
 ourSystemTag :: HasUpdateConfiguration => SystemTag
 ourSystemTag = ccSystemTag updateConfiguration

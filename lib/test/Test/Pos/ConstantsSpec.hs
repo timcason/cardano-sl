@@ -6,8 +6,9 @@ module Test.Pos.ConstantsSpec
 
 import           Universum
 
-import           Pos.Core.Update      (currentSystemTag, mkSystemTag)
-import qualified Pos.Update.Constants as C
+import           Pos.Core.Update          (mkSystemTag)
+import           Pos.Update.Configuration (currentSystemTag, )
+import qualified Pos.Update.Constants     as C
 
 import           Test.Hspec (Expectation, Spec, describe, it, shouldSatisfy)
 
