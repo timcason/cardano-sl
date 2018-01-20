@@ -1,8 +1,8 @@
 {-# LANGUAGE DataKinds    #-}
 {-# LANGUAGE RankNTypes   #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE Pos #-}
 
--- | Pos.Util specification
+-- | TypeFamilies.Util specification
 
 module Test.Pos.UtilSpec
        ( spec
